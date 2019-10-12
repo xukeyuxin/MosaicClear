@@ -1,4 +1,8 @@
 import tensorflow as tf
+from tqdm import tqdm
+import cv2
+import os
+import numpy as np
 
 def average_gradients(grads):
     average_list = []
@@ -13,5 +17,35 @@ def average_gradients(grads):
         average_list.append((average_grad,average_vars))
 
     return average_list
+
+def cut_image(cut_index,image,label,cut_num = [2,2]):
+    assert image.shape == label.shape,'wrong shape with input_image and label_image'
+
+    image_cut_height = image.shape[1] // cut_num[0]
+    image_cut_weight = image.shape[2] // cut_num[1]
+    new_image = image[:,cut_index[0] * image_cut_height: (cut_index[0] + 1) * image_cut_height, cut_index[1] * image_cut_weight: (cut_index[1] + 1) * image_cut_weight, :]
+    new_label = label[:,cut_index[0] * image_cut_height: (cut_index[0] + 1) * image_cut_height, cut_index[1] * image_cut_weight: (cut_index[1] + 1) * image_cut_weight, :]
+
+    return new_image, new_label
+
+def combine_name(names):
+    return '/'.join(names)
+
+def rgb_float(input):
+    return (input - 127.5) / 127.5
+
+def load_image():
+    image_path = 'data/lfw_faces/train'
+    image_list = os.listdir(image_path)
+    image_content = []
+    for i in tqdm(image_list):
+        cell_content = cv2.imread(os.path.join(image_path,i)).astype(np.float32)
+        image_content.append(cell_content)
+
+    return rgb_float(np.array(image_content))
+
+
+
+
 
 
