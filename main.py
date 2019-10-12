@@ -16,7 +16,8 @@ tf.flags.DEFINE_string('summary_dir','logs','default model save path: logs')
 
 
 if __name__ == '__main__':
-    with tf.Session() as sess:
+    config = tf.ConfigProto(allow_soft_placement=True)
+    with tf.Session(config = config) as sess:
         Mosaic = mosaic(sess,FLAGS)
         Mosaic.main()
 
