@@ -170,21 +170,8 @@ class mosaic(op_base):
                                         staircase=True)
 
         ### distributed
-        # d_opt_t = tf.train.AdamOptimizer(lr)
-        # g_opt_t = tf.train.AdamOptimizer(lr)
-
         d_opt = tf.train.AdamOptimizer(lr)
         g_opt = tf.train.AdamOptimizer(lr)
-        #
-        # d_opt_2 = tf.train.AdamOptimizer(lr)
-        # g_opt_2 = tf.train.AdamOptimizer(lr)
-        #
-        # d_opt_3 = tf.train.AdamOptimizer(lr)
-        # g_opt_3 = tf.train.AdamOptimizer(lr)
-        #
-        # d_opt_4 = tf.train.AdamOptimizer(lr)
-        # g_opt_4 = tf.train.AdamOptimizer(lr)
-
 
 
         for i in range(self.cpu_nums):
@@ -244,10 +231,12 @@ class mosaic(op_base):
                 _, d_loss, g_loss = self.sess.run([train_op, d_loss, g_loss])
 
                 if(step % 10 == 0):
+                    print('update summary')
                     summary_str,step = self.sess.run([summary_op,step])
                     summary_writer.add_summary(summary_str,step)
 
                 if(step % 100 == 0):
+                    print('update model save')
                     saver.save(self.sess,os.path.join(self.model_path,"model_%s.ckpt " % step),global_step = step)
 
         except tf.errors.OutOfRangeError:

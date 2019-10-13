@@ -17,6 +17,7 @@ tf.flags.DEFINE_string('summary_dir','logs','default model save path: logs')
 
 if __name__ == '__main__':
     config = tf.ConfigProto(allow_soft_placement=True)
+    config.gpu_options.allow_growth = True
     with tf.Session(config = config) as sess:
         Mosaic = mosaic(sess,FLAGS)
         Mosaic.main()
