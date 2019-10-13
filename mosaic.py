@@ -228,11 +228,11 @@ class mosaic(op_base):
         try:
             while not coord.should_stop():
                 print('start train')
-                _, d_loss, g_loss = self.sess.run([train_op, d_loss, g_loss])
-
+                _, d_loss, g_loss, step = self.sess.run([train_op, d_loss, g_loss, global_steps])
+                print('finish %s' % step)
                 if(step % 10 == 0):
                     print('update summary')
-                    summary_str,step = self.sess.run([summary_op,step])
+                    summary_str = self.sess.run([summary_op,])
                     summary_writer.add_summary(summary_str,step)
 
                 if(step % 100 == 0):
