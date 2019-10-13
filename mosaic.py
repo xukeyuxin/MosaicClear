@@ -237,7 +237,7 @@ class mosaic(op_base):
 
                 if(step % 100 == 0):
                     print('update model save')
-                    saver.save(self.sess,os.path.join(self.model_path,"model_%s.ckpt " % int(step)),global_step = step)
+                    saver.save(self.sess,os.path.join(self.model_path,"model_%s.ckpt " % int(step)),global_step = int(step))
 
         except tf.errors.OutOfRangeError:
             print('finish train')
