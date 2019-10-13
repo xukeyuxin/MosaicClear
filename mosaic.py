@@ -232,7 +232,7 @@ class mosaic(op_base):
                 print('finish %s' % step)
                 if(step % 10 == 0):
                     print('update summary')
-                    summary_str = self.sess.run([summary_op,])
+                    summary_str = self.sess.run(summary_op)
                     summary_writer.add_summary(summary_str,step)
 
                 if(step % 100 == 0):
