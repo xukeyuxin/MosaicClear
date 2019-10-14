@@ -183,6 +183,7 @@ class mosaic(op_base):
 
                     print('start one gpu')
                     d_loss,g_loss,d_grads,g_grads = self.loss(image,label,d_opt,g_opt,scope.name)
+                    tf.get_variable_scope().reuse_variables()
 
                     d_mix_grads.append(d_grads)
                     g_mix_grads.append(g_grads)
@@ -252,6 +253,9 @@ class mosaic(op_base):
             coord.request_stop()
 
         coord.join(thread)
+
+    def test(self):
+
 
     def main(self):
         index = 0

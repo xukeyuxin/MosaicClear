@@ -9,7 +9,6 @@ def average_gradients(grads):
     for cell in zip(*grads):
         cell_grads = []
         for grad,var in cell:
-            print(grad.shape)
             grad = tf.expand_dims(grad,0)
             cell_grads.append(grad)
 
