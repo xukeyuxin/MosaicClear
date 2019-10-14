@@ -231,7 +231,7 @@ class mosaic(op_base):
         ### train
         saver = tf.train.Saver(max_to_keep = 1)
         if(pretrain):
-            self.sess.restore(tf.train.latest_checkpoint(self.model_path))
+            saver.restore(self.sess,tf.train.latest_checkpoint(self.model_path))
             print('restore success')
 
         step = 1
