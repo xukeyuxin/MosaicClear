@@ -131,9 +131,10 @@ class mosaic(op_base):
         self.summaries.append(tf.summary.scalar('d_loss', d_loss))
         self.summaries.append(tf.summary.scalar('f_loss', g_loss))
 
-        # var_list_train = [ var.name for var in tf.trainable_variables() ]
-        # print(var_list_train)
+        var_list_train = self.get_vars( combine_name([scope_name,'D']) )
 
+        # d_grads = d_opt.compute_gradients(d_loss)  ## grads, vars
+        # g_grads = g_opt.compute_gradients(g_loss)  ## grads, vars
         d_grads = d_opt.compute_gradients(d_loss, var_list=self.get_vars( combine_name([scope_name,'D']) ))  ## grads, vars
         g_grads = g_opt.compute_gradients(g_loss, var_list=self.get_vars( combine_name([scope_name,'G']) ))  ## grads, vars
 
@@ -180,7 +181,7 @@ class mosaic(op_base):
             with tf.device('%s:%s' % (self.train_utils, i)):
                 with tf.variable_scope('distributed_%s' % i) as scope:
 
-                    print('start one cpu')
+                    print('start one gpu')
                     d_loss,g_loss,d_grads,g_grads = self.loss(image,label,d_opt,g_opt,scope.name)
 
                     d_mix_grads.append(d_grads)
@@ -189,11 +190,15 @@ class mosaic(op_base):
         d_grads,g_grads = average_gradients(d_mix_grads), average_gradients(g_mix_grads)
         d_grads_op, g_grads_op = d_opt.apply_gradients(d_grads, global_step=global_steps), g_opt.apply_gradients(g_grads, global_step=global_steps)
 
-        MOVING_AVERAGE_DECAY = 0.9999
-        variable_averages = tf.train.ExponentialMovingAverage(
-            MOVING_AVERAGE_DECAY)
-        variables_averages_op = variable_averages.apply(tf.trainable_variables())
-        train_op = tf.group(d_grads_op, g_grads_op, variables_averages_op)
+        MOVING_AVERAGE_DECAY = 0.9
+        variable_averages_g = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY)
+        variable_averages_d = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY)
+
+        g_variables_averages_op = variable_averages_g.apply( self.get_vars( combine_name(['distributed_0','G']) + combine_name(['distributed_1','G']) + combine_name(['distributed_2','G']) ) )
+        d_variables_averages_op = variable_averages_g.apply( self.get_vars( combine_name(['distributed_0','D']) + combine_name(['distributed_1','D']) + combine_name(['distributed_2','D']) ) )
+
+        train_op_g = tf.group(g_grads_op, g_variables_averages_op)
+        train_op_d = tf.group(d_grads_op, d_variables_averages_op)
 
         ### summary
 
@@ -229,8 +234,7 @@ class mosaic(op_base):
         try:
             while not coord.should_stop():
                 print('start train')
-                _, show_d_loss, show_g_loss = self.sess.run([train_op, d_loss, g_loss])
-                print('finish %s' % step)
+                _g,_d = self.sess.run([train_op_g,train_op_d])
                 if(step % 10 == 0):
                     print('update summary')
                     summary_str = self.sess.run(summary_op)
