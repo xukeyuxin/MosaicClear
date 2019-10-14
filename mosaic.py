@@ -225,11 +225,12 @@ class mosaic(op_base):
         ### train
         saver = tf.train.Saver(max_to_keep = 1)
 
+        step = 1
         try:
             while not coord.should_stop():
                 print('start train')
-                _, d_loss, g_loss, step = self.sess.run([train_op, d_loss, g_loss, global_steps])
-                print('finish %s' % int(step))
+                _, d_loss, g_loss = self.sess.run([train_op, d_loss, g_loss])
+                print('finish %s' % step)
                 if(step % 10 == 0):
                     print('update summary')
                     summary_str = self.sess.run(summary_op)
@@ -237,7 +238,9 @@ class mosaic(op_base):
 
                 if(step % 100 == 0):
                     print('update model save')
-                    saver.save(self.sess,os.path.join(self.model_path,"model_%s.ckpt " % int(step)))
+                    saver.save(self.sess,os.path.join(self.model_path,"model_%s.ckpt " % step))
+
+                step += 1
 
         except tf.errors.OutOfRangeError:
             print('finish train')
