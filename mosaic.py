@@ -155,7 +155,7 @@ class mosaic(op_base):
 
         return image,label
 
-    def train(self,image, label):
+    def train(self,image, label, pretrain = False):
 
         ## lr
         LEARNING_RATE_DECAY_FACTOR = 0.1
@@ -230,6 +230,9 @@ class mosaic(op_base):
 
         ### train
         saver = tf.train.Saver(max_to_keep = 1)
+        if(pretrain):
+            self.sess.restore(tf.train.latest_checkpoint(self.model_path))
+            print('restore success')
 
         step = 1
         try:
@@ -255,10 +258,10 @@ class mosaic(op_base):
         coord.join(thread)
 
     def test(self):
-
+        pass
 
     def main(self):
         index = 0
         image, label = self.build_queue(index)
-        self.train(image, label)
+        self.train(image, label, pretrain = True)
 
