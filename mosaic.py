@@ -179,7 +179,7 @@ class mosaic(op_base):
             d_mix_grads = []
             g_mix_grads = []
             with tf.device('%s:%s' % (self.train_utils, i)):
-                with tf.variable_scope('distributed_%s' % i) as scope:
+                with tf.name_scope('distributed_%s' % i) as scope:
 
                     print('start one gpu')
                     d_loss,g_loss,d_grads,g_grads = self.loss(image,label,d_opt,g_opt,scope.name)
@@ -246,7 +246,7 @@ class mosaic(op_base):
 
                 if(step % 100 == 0):
                     print('update model save')
-                    saver.save(self.sess,os.path.join(self.model_path,"model_%s.ckpt " % step))
+                    saver.save(self.sess,os.path.join(self.model_path,"model_%s.ckpt" % step))
 
                 step += 1
 
