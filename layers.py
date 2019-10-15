@@ -115,9 +115,10 @@ def batch_normal(input,name = None,is_training=True, moving_decay=0.99):
         mean,variance = tf.nn.moments(input, axes = [0,1,2], keep_dims = True)
 
         ema = tf.train.ExponentialMovingAverage(moving_decay)
-
+        ema_apply_op = ema.apply([mean, variance])
+        
         def mean_vars_update():
-            ema_apply_op = ema.apply([mean, variance])
+
             with tf.control_dependencies([ema_apply_op]):
                 return tf.identity(mean),tf.identity(variance)
         if(is_training):
