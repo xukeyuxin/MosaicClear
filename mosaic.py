@@ -283,7 +283,8 @@ class mosaic(op_base):
 
         ### start test
         print('find uninitialized_variable')
-        print(sess.run(tf.report_uninitialized_variables()))
+        print(self.sess.run(tf.report_uninitialized_variables()))
+
         if(not need_train):
             try:
                 while not coord.should_stop():
