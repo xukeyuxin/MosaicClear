@@ -289,7 +289,7 @@ class mosaic(op_base):
             try:
                 while not coord.should_stop():
                     print('start test')
-                    fake = self.generator('G', image)
+                    fake = self.generator('G', image, is_training = False)
                     _fake = self.sess.run(fake)
                     make_image(_fake, step + '.jpg')
 
