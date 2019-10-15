@@ -165,7 +165,7 @@ class mosaic(op_base):
         tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY).apply(self.get_vars('D'))
 
         var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-        
+
         ### init
         init = tf.global_variables_initializer()
         self.sess.run(init)
@@ -280,26 +280,40 @@ class mosaic(op_base):
 
         step = 1
 
-        #### start train
         try:
             while not coord.should_stop():
                 print('start train')
-                _g, _d = self.sess.run([train_op_g, train_op_d])
-                if (step % 10 == 0):
-                    print('update summary')
-                    summary_str = self.sess.run(summary_op)
-                    summary_writer.add_summary(summary_str, step)
-
-                if (step % 100 == 0):
-                    print('update model save')
-                    saver.save(self.sess, os.path.join(self.model_path, "model_%s.ckpt" % step))
+                fake = self.generator('G', image)
+                _fake = self.sess.run(fake)
+                make_image(_fake, step + '.jpg')
 
                 step += 1
 
+
         except tf.errors.OutOfRangeError:
-            print('finish train')
+            print('finish test')
         finally:
             coord.request_stop()
+        #### start train
+        # try:
+        #     while not coord.should_stop():
+        #         print('start train')
+        #         _g, _d = self.sess.run([train_op_g, train_op_d])
+        #         if (step % 10 == 0):
+        #             print('update summary')
+        #             summary_str = self.sess.run(summary_op)
+        #             summary_writer.add_summary(summary_str, step)
+        #
+        #         if (step % 100 == 0):
+        #             print('update model save')
+        #             saver.save(self.sess, os.path.join(self.model_path, "model_%s.ckpt" % step))
+        #
+        #         step += 1
+        #
+        # except tf.errors.OutOfRangeError:
+        #     print('finish train')
+        # finally:
+        #     coord.request_stop()
 
         coord.join(thread)
 
