@@ -119,6 +119,8 @@ class mosaic(op_base):
 
     def graph(self, input_data, lable_data, d_opt = None, g_opt = None, is_training = True):
 
+
+
         fake = self.generator('G', input_data, is_training = is_training)
         disc_fake = self.discriminator('D', input_data, fake, is_training = is_training)
         disc_real = self.discriminator('D', input_data, lable_data, is_training = is_training)
@@ -146,6 +148,7 @@ class mosaic(op_base):
         weight_cut = images.shape[2] // 2
         input_image = images[:, :, :weight_cut, :], images[:, :, weight_cut:, :]
         mc_image, mc_label = cut_image([index // 2, index % 2], *input_image)
+
         input_queue = tf.train.slice_input_producer([mc_image, mc_label], num_epochs=self.epoch, shuffle=False)
         image, label = tf.train.batch(input_queue, batch_size=batch_size, num_threads=2,
                                       capacity=64,
@@ -182,6 +185,7 @@ class mosaic(op_base):
                 fake = self.generator('G', image)
                 _fake = self.sess.run(fake)
                 make_image(_fake, step + '.jpg')
+
                 step += 1
 
 
@@ -305,11 +309,10 @@ class mosaic(op_base):
         test_size = len(os.listdir('data/lfw_faces/test'))
         self.batch_size = test_size
         image, label = self.build_queue(index,self.batch_size,test = True)
+
         self.evaluate(image, label)
 
     def main(self):
         index = 0
         image, label = self.build_queue(index,self.batch_size,test = False)
-        print(image.shape)
-        print(label.shape)
         self.train(image, label, pretrain=False)
