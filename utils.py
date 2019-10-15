@@ -34,8 +34,18 @@ def combine_name(names):
 def rgb_float(input):
     return (input - 127.5) / 127.5
 
-def load_image():
-    image_path = 'data/lfw_faces/train'
+def float_rgb(input):
+    return input * 127.5 + 127.5
+
+def make_image(input):
+    image_content = tf.map_fn(float_rgb, input, dtype=tf.uint8)
+    index = 0
+    for i in image_content:
+        cv2.imwrite(os.path.join('lfw_build',index + '.jpg'), i)
+        index += 1
+
+def load_image(test):
+    image_path = 'data/lfw_faces/train' if not test else 'data/lfw_faces/test'
     image_list = os.listdir(image_path)
     image_content = []
     for i in tqdm(image_list):

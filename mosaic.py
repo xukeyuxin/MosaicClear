@@ -117,7 +117,7 @@ class mosaic(op_base):
         safe_log = 1e-12
         return - tf.reduce_mean(tf.log(output_data + safe_log))
 
-    def loss(self, input_data, lable_data, d_opt, g_opt):
+    def graph(self, input_data, lable_data, d_opt = None, g_opt = None):
 
         fake = self.generator('G', input_data)
         disc_fake = self.discriminator('D', input_data, fake)
@@ -129,6 +129,9 @@ class mosaic(op_base):
         self.summaries.append(tf.summary.scalar('d_loss', d_loss))
         self.summaries.append(tf.summary.scalar('f_loss', g_loss))
 
+        if( not d_opt and not g_opt):
+            return
+
         # d_grads = d_opt.compute_gradients(d_loss)  ## grads, vars
         # g_grads = g_opt.compute_gradients(g_loss)  ## grads, vars
         d_grads = d_opt.compute_gradients(d_loss, var_list=self.get_vars('D'))  ## grads, vars
@@ -137,18 +140,53 @@ class mosaic(op_base):
         return d_loss, g_loss, d_grads, g_grads
 
     ### queue
-    def build_queue(self, index=0):
-        images = load_image()
+    def build_queue(self, batch_size, index=0, test = False):
 
+        images = load_image(test)
         weight_cut = images.shape[2] // 2
         input_image = images[:, :, :weight_cut, :], images[:, :, weight_cut:, :]
         mc_image, mc_label = cut_image([index // 2, index % 2], *input_image)
         input_queue = tf.train.slice_input_producer([mc_image, mc_label], num_epochs=self.epoch, shuffle=False)
-        image, label = tf.train.batch(input_queue, batch_size=self.batch_size, num_threads=2,
+        image, label = tf.train.batch(input_queue, batch_size=batch_size, num_threads=2,
                                       capacity=64,
                                       allow_smaller_final_batch=False)
 
         return image, label
+
+    def evaluate(self,image,label):
+
+        self.graph(image, label)
+
+        ### init
+        init = tf.global_variables_initializer()
+        self.sess.run(init)
+        saver = tf.train.Saver(max_to_keep=1)
+        saver.restore(self.sess, tf.train.latest_checkpoint(self.model_path))
+        print('restore success')
+
+        ### 队列启动
+        coord = tf.train.Coordinator()
+        thread = tf.train.start_queue_runners(sess=self.sess)
+
+        ### start test
+        try:
+            while not coord.should_stop():
+                print('start train')
+                fake = self.generator('G', image)
+                _fake = self.sess.run(fake)
+                make_image(_fake, step + '.jpg')
+                step += 1
+
+        except tf.errors.OutOfRangeError:
+            print('finish test')
+        finally:
+            coord.request_stop()
+
+        coord.join(thread)
+
+
+
+
 
     def train(self, image, label, pretrain=False):
 
@@ -175,10 +213,11 @@ class mosaic(op_base):
             with tf.device('%s:%s' % (self.train_utils, i)):
                 with tf.name_scope('distributed_%s' % i) as scope:
                     print('start one gpu')
-                    d_loss, g_loss, d_grads, g_grads = self.loss(image, label, d_opt, g_opt)
+                    d_loss, g_loss, d_grads, g_grads = self.graph(image, label, d_opt, g_opt)
 
                     d_mix_grads.append(d_grads)
                     g_mix_grads.append(g_grads)
+
 
         d_grads, g_grads = average_gradients(d_mix_grads), average_gradients(g_mix_grads)
         d_grads_op, g_grads_op = d_opt.apply_gradients(d_grads, global_step=global_steps), g_opt.apply_gradients(
@@ -226,9 +265,11 @@ class mosaic(op_base):
         saver = tf.train.Saver(max_to_keep=1)
         if (pretrain):
             saver.restore(self.sess, tf.train.latest_checkpoint(self.model_path))
-            print('restore success')
+            print('restore success %s' % tf.train.latest_checkpoint(self.model_path))
 
         step = 1
+
+        #### start train
         try:
             while not coord.should_stop():
                 print('start train')
@@ -252,9 +293,12 @@ class mosaic(op_base):
         coord.join(thread)
 
     def test(self):
-        pass
+        index = 0
+        test_size = len(os.listdir('data/lfw_faces/test'))
+        image, label = self.build_queue(index,test_size,test = True)
+        self.evaluate(image, label)
 
     def main(self):
         index = 0
-        image, label = self.build_queue(index)
-        self.train(image, label, pretrain=False)
+        image, label = self.build_queue(index,self.batch_size,test = False)
+        self.train(image, label, pretrain=True)
