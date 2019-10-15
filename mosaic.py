@@ -140,7 +140,7 @@ class mosaic(op_base):
         return d_loss, g_loss, d_grads, g_grads
 
     ### queue
-    def build_queue(self, batch_size, index=0, test = False):
+    def build_queue(self, index, batch_size, test = False):
 
         images = load_image(test)
         weight_cut = images.shape[2] // 2
@@ -310,4 +310,6 @@ class mosaic(op_base):
     def main(self):
         index = 0
         image, label = self.build_queue(index,self.batch_size,test = False)
+        print(image.shape)
+        print(label.shape)
         self.train(image, label, pretrain=False)
