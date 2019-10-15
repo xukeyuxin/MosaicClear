@@ -225,7 +225,7 @@ class mosaic(op_base):
             with tf.device('%s:%s' % (self.train_utils, i)):
                 with tf.name_scope('distributed_%s' % i) as scope:
                     print('start one gpu')
-                    d_loss, g_loss, d_grads, g_grads = self.graph(image, label, d_opt, g_opt)
+                    d_loss, g_loss, d_grads, g_grads = self.graph(image, label, d_opt, g_opt, is_training = need_train)
 
                     d_mix_grads.append(d_grads)
                     g_mix_grads.append(g_grads)
