@@ -111,7 +111,6 @@ def batch_normal(input,name = None,is_training=True, moving_decay=0.99):
     with tf.variable_scope(name):
         gamma = tf.get_variable('gamma',input_shape[-1],initializer = gamma_initializer)
         beta = tf.get_variable('beta',input_shape[-1],initializer = beta_initializer)
-
         mean,variance = tf.nn.moments(input, axes = [0,1,2], keep_dims = True)
 
         ema = tf.train.ExponentialMovingAverage(moving_decay)
@@ -120,18 +119,16 @@ def batch_normal(input,name = None,is_training=True, moving_decay=0.99):
             ema_apply_op = ema.apply([mean,variance])
             with tf.control_dependencies([ema_apply_op]):
                 return tf.identity(mean),tf.identity(variance)
-
         if(is_training):
             mean, variance = mean_vars_update()
         else:
             mean, variance = ema.average(mean), ema.average(variance)
 
         epsilon = 1e-5
-        inv = (variance + epsilon) ** -0.5 * beta
+        inv = (variance + epsilon) ** -0.5
         normalized = (input - mean) * inv
-
     return gamma * normalized + beta
-
+    # return tf.nn.batch_normalization(input, mean, variance, beta, gamma, epsilon)
 
 
 
