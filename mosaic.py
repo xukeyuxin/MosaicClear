@@ -15,69 +15,69 @@ class mosaic(op_base):
         with tf.variable_scope(name, reuse=tf.AUTO_REUSE):
             ### 3 -> 64 64
             e0 = ly.conv2d(input, 64, strides=2, name='g_conv2d_0')
-            # e0 = ly.batch_normal(e0, name='g_bn_0', is_training = is_training)
+            e0 = ly.batch_normal(e0, name='g_bn_0', is_training = is_training)
             e0 = ly.relu(e0, alpha=0.2)
 
             ### 64 -> 128 32
             e1 = ly.conv2d(e0, 128, strides=2, name='g_conv2d_1')
-            # e1 = ly.batch_normal(e1, name='g_bn_1', is_training = is_training)
+            e1 = ly.batch_normal(e1, name='g_bn_1', is_training = is_training)
             e1 = ly.relu(e1, alpha=0.2)
 
             ### 128 -> 256 16
             e2 = ly.conv2d(e1, 256, strides=2, name='g_conv2d_2')
-            # e2 = ly.batch_normal(e2, name='g_bn_2', is_training = is_training)
+            e2 = ly.batch_normal(e2, name='g_bn_2', is_training = is_training)
             e2 = ly.relu(e2, alpha=0.2)
 
             ### 256 -> 512 8
             e3 = ly.conv2d(e2, 512, strides=2, name='g_conv2d_3')
-            # e3 = ly.batch_normal(e3, name='g_bn_3', is_training = is_training)
+            e3 = ly.batch_normal(e3, name='g_bn_3', is_training = is_training)
             e3 = ly.relu(e3, alpha=0.2)
 
             ### 512 -> 512 4
             e4 = ly.conv2d(e3, 512, strides=2, name='g_conv2d_4')
-            # e4 = ly.batch_normal(e4, name='g_bn_4', is_training = is_training)
+            e4 = ly.batch_normal(e4, name='g_bn_4', is_training = is_training)
             e4 = ly.relu(e4, alpha=0.2)
 
             ### 512 -> 512 2
             e5 = ly.conv2d(e4, 512, strides=2, name='g_conv2d_5')
-            # e5 = ly.batch_normal(e5, name='g_bn_5', is_training = is_training)
+            e5 = ly.batch_normal(e5, name='g_bn_5', is_training = is_training)
             e5 = ly.relu(e5, alpha=0.2)
 
             ### 512 -> 512 4
             d1 = ly.deconv2d(e5, 512, strides=2, name='g_deconv2d_1')
-            # d1 = ly.batch_normal(d1, name='g_bn_6', is_training = is_training)
+            d1 = ly.batch_normal(d1, name='g_bn_6', is_training = is_training)
             d1 = tf.nn.dropout(d1, keep_prob=0.5)
             d1 = tf.concat([d1, e4], axis=3)
             d1 = ly.relu(d1, alpha=0.2)
 
             ### 512 -> 512 8
             d2 = ly.deconv2d(d1, 512, strides=2, name='g_deconv2d_2')
-            # d2 = ly.batch_normal(d2, name='g_bn_7', is_training = is_training)
+            d2 = ly.batch_normal(d2, name='g_bn_7', is_training = is_training)
             d2 = tf.nn.dropout(d2, keep_prob=0.5)
             d2 = ly.relu(d2, alpha=0.2)
             d2 = tf.concat([d2, e3], axis=3)
 
             ### 512 -> 256 16
             d3 = ly.deconv2d(d2, 256, strides=2, name='g_deconv2d_3')
-            # d3 = ly.batch_normal(d3, name='g_bn_8', is_training = is_training)
+            d3 = ly.batch_normal(d3, name='g_bn_8', is_training = is_training)
             d3 = ly.relu(d3, alpha=0.2)
             d3 = tf.concat([d3, e2], axis=3)
 
             ### 256 -> 128 32
             d4 = ly.deconv2d(d3, 128, strides=2, name='g_deconv2d_4')
-            # d4 = ly.batch_normal(d4, name='g_bn_9', is_training = is_training)
+            d4 = ly.batch_normal(d4, name='g_bn_9', is_training = is_training)
             d4 = ly.relu(d4, alpha=0.2)
             d4 = tf.concat([d4, e1], axis=3)
 
             ### 128 -> 64 64
             d5 = ly.deconv2d(d4, 64, strides=2, name='g_deconv2d_5')
-            # d5 = ly.batch_normal(d5, name='g_bn_10', is_training = is_training)
+            d5 = ly.batch_normal(d5, name='g_bn_10', is_training = is_training)
             d5 = ly.relu(d5, alpha=0.2)
             d5 = tf.concat([d5, e0], axis=3)
 
             ### 64 -> 3 128
             d6 = ly.deconv2d(d5, 3, strides=2, name='g_deconv2d_6')
-            # d6 = ly.batch_normal(d6, name='g_bn_11', is_training = is_training)
+            d6 = ly.batch_normal(d6, name='g_bn_11', is_training = is_training)
             d6 = ly.relu(d6, alpha=0.2)
 
             return tf.nn.tanh(d6)
@@ -91,13 +91,13 @@ class mosaic(op_base):
 
             input = tf.pad(input, [[0, 0], [1, 1], [1, 1], [0, 0]])
             input = ly.conv2d(input, 128, strides=2, name='d_conv2d_1')
-            # input = ly.batch_normal(input, name='d_bn1',is_training = is_training)
+            input = ly.batch_normal(input, name='d_bn1',is_training = is_training)
             input = ly.relu(input, alpha=0.2)
 
             ### 31 | 15
             input = tf.pad(input, [[0, 0], [1, 1], [1, 1], [0, 0]])
             input = ly.conv2d(input, 256, strides=1, name='d_conv2d_2', padding='VALID')
-            # input = ly.batch_normal(input, name='d_bn2',is_training = is_training)
+            input = ly.batch_normal(input, name='d_bn2',is_training = is_training)
             input = ly.relu(input, alpha=0.2)
 
             ### 30 | 14
