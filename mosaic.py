@@ -165,8 +165,7 @@ class mosaic(op_base):
         tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY).apply(self.get_vars('D'))
 
         var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-        print(var_list)
-
+        
         ### init
         init = tf.global_variables_initializer()
         self.sess.run(init)
