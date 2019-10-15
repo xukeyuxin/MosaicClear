@@ -199,7 +199,7 @@ class mosaic(op_base):
 
 
 
-    def train(self, image, label, pretrain=False):
+    def train(self, image, label, pretrain=False, need_train = True):
 
         ## lr
         LEARNING_RATE_DECAY_FACTOR = 0.1
@@ -279,26 +279,45 @@ class mosaic(op_base):
             print('restore success %s' % tf.train.latest_checkpoint(self.model_path))
 
         step = 1
+
+        ### start test
+        if(not need_train):
+            try:
+                while not coord.should_stop():
+                    print('start train')
+                    fake = self.generator('G', image)
+                    _fake = self.sess.run(fake)
+                    make_image(_fake, step + '.jpg')
+
+                    step += 1
+
+
+            except tf.errors.OutOfRangeError:
+                print('finish test')
+            finally:
+                coord.request_stop()
+
         ### start train
-        try:
-            while not coord.should_stop():
-                print('start train')
-                _g, _d = self.sess.run([train_op_g, train_op_d])
-                if (step % 10 == 0):
-                    print('update summary')
-                    summary_str = self.sess.run(summary_op)
-                    summary_writer.add_summary(summary_str, step)
+        elif(need_train):
+            try:
+                while not coord.should_stop():
+                    print('start train')
+                    _g, _d = self.sess.run([train_op_g, train_op_d])
+                    if (step % 10 == 0):
+                        print('update summary')
+                        summary_str = self.sess.run(summary_op)
+                        summary_writer.add_summary(summary_str, step)
 
-                if (step % 100 == 0):
-                    print('update model save')
-                    saver.save(self.sess, os.path.join(self.model_path, "model_%s.ckpt" % step))
+                    if (step % 100 == 0):
+                        print('update model save')
+                        saver.save(self.sess, os.path.join(self.model_path, "model_%s.ckpt" % step))
 
-                step += 1
+                    step += 1
 
-        except tf.errors.OutOfRangeError:
-            print('finish train')
-        finally:
-            coord.request_stop()
+            except tf.errors.OutOfRangeError:
+                print('finish train')
+            finally:
+                coord.request_stop()
 
         coord.join(thread)
 
@@ -308,7 +327,7 @@ class mosaic(op_base):
         self.batch_size = test_size
         image, label = self.build_queue(index,self.batch_size,test = True)
 
-        self.evaluate(image, label)
+        self.train(image, label, pretrain=True, need_train = False)
 
     def main(self):
         index = 0
