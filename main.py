@@ -1,7 +1,14 @@
 import tensorflow as tf
 import numpy as np
 import os
+import sys
 from mosaic import mosaic
+
+op = sys.argv
+if(len(op) >= 2):
+    action = op[1]
+else:
+    action = 'train'
 
 FLAGS = tf.flags.FLAGS
 
@@ -20,7 +27,9 @@ if __name__ == '__main__':
     config.gpu_options.allow_growth = True
     with tf.Session(config = config) as sess:
         Mosaic = mosaic(sess,FLAGS)
-        Mosaic.main()
-        # Mosaic.test()
+        if(action == 'train'):
+            Mosaic.main()
+        elif(action == 'test'):
+            Mosaic.test()
 
 
