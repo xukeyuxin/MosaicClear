@@ -203,9 +203,9 @@ class mosaic(op_base):
 
 
         ### init
-        init = self.sess.run(tf.global_variables_initializer())
-        # init_local = tf.local_variables_initializer()
-        # self.sess.run([init, init_local])
+        init = tf.global_variables_initializer()
+        init_local = tf.local_variables_initializer()
+        self.sess.run([init, init_local])
 
         ## lr
         LEARNING_RATE_DECAY_FACTOR = 0.1
@@ -216,7 +216,7 @@ class mosaic(op_base):
 
         lr = tf.train.exponential_decay(self.lr,
                                         global_steps,
-                                        decay_steps,
+                                      decay_steps,
                                         LEARNING_RATE_DECAY_FACTOR,
                                         staircase=True)
 
