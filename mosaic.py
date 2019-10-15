@@ -284,21 +284,21 @@ class mosaic(op_base):
         step = 1
 
         ### start test
-        # if(not need_train):
-        #     try:
-        #         while not coord.should_stop():
-        #             print('start test')
-        #             fake = self.generator('G', image)
-        #             _fake = self.sess.run(fake)
-        #             make_image(_fake, step + '.jpg')
-        #
-        #             step += 1
-        #
-        #
-        #     except tf.errors.OutOfRangeError:
-        #         print('finish test')
-        #     finally:
-        #         coord.request_stop()
+        if(not need_train):
+            try:
+                while not coord.should_stop():
+                    print('start test')
+                    fake = self.generator('G', image)
+                    _fake = self.sess.run(fake)
+                    make_image(_fake, step + '.jpg')
+
+                    step += 1
+
+
+            except tf.errors.OutOfRangeError:
+                print('finish test')
+            finally:
+                coord.request_stop()
 
         ### start train
         elif(need_train):
