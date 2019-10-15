@@ -20,7 +20,7 @@ if __name__ == '__main__':
     config.gpu_options.allow_growth = True
     with tf.Session(config = config) as sess:
         Mosaic = mosaic(sess,FLAGS)
-        # Mosaic.main()
-        Mosaic.test()
+        Mosaic.main()
+        # Mosaic.test()
 
 
