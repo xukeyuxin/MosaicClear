@@ -1,4 +1,5 @@
 data/
 model/
 logs/
-__pycache__/*
+/.idea/
+*/__pycache__

@@ -260,4 +260,4 @@ class mosaic(op_base):
     def main(self):
         index = 0
         image, label = self.build_queue(index)
-        self.train(image, label, pretrain=True)
+        self.train(image, label, pretrain=False)
