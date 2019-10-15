@@ -293,10 +293,9 @@ class mosaic(op_base):
             try:
                 while not coord.should_stop():
                     print('start test')
-                    is_training = tf.constant(tf.bool,False)
-                    fake = self.generator('G', image, is_training = is_training)
+                    fake = self.generator('G', image, is_training = False)
                     _fake = self.sess.run(fake)
-                    make_image(_fake, step + '.jpg')
+                    make_image(_fake)
 
                     step += 1
 

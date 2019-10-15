@@ -41,7 +41,7 @@ def make_image(input):
     image_content = tf.map_fn(float_rgb, input, dtype=tf.uint8)
     index = 0
     for i in image_content:
-        cv2.imwrite(os.path.join('lfw_build',index + '.jpg'), i)
+        cv2.imwrite(os.path.join('lfw_build',str(index) + '.jpg'), i)
         index += 1
 
 def load_image(test):
