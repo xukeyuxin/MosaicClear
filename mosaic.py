@@ -201,6 +201,12 @@ class mosaic(op_base):
 
     def train(self, image, label, pretrain=False, need_train = True):
 
+
+        ### init
+        init = tf.global_variables_initializer()
+        init_local = tf.local_variables_initializer()
+        self.sess.run([init, init_local])
+
         ## lr
         LEARNING_RATE_DECAY_FACTOR = 0.1
         global_steps = tf.get_variable(name='global_step', shape=[], initializer=tf.constant_initializer(0),
@@ -213,6 +219,7 @@ class mosaic(op_base):
                                         decay_steps,
                                         LEARNING_RATE_DECAY_FACTOR,
                                         staircase=True)
+
 
         ### distributed
         d_opt = tf.train.AdamOptimizer(lr)
@@ -263,10 +270,6 @@ class mosaic(op_base):
         summary_writer = tf.summary.FileWriter(self.summary_dir, self.sess.graph)
         summary_op = tf.summary.merge(self.summaries)
 
-        ### init
-        init = tf.global_variables_initializer()
-        init_local = tf.local_variables_initializer()
-        self.sess.run([init, init_local])
 
         ### 队列启动
         coord = tf.train.Coordinator()
