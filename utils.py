@@ -38,11 +38,15 @@ def float_rgb(input):
     return input * 127.5 + 127.5
 
 def make_image(input):
-    image_content = tf.map_fn(float_rgb, input, dtype=tf.uint8)
+
+    print('finish write %s' % index)
+
+def make_image(input):
+    image_content = float_rgb(input).astype(np.uint8)
     index = 0
-    for i in image_content:
-        cv2.imwrite(os.path.join('lfw_build',str(index) + '.jpg'), i)
+    for cell in image_content:
         index += 1
+        cv2.imwrite(os.path.join('data/lfw_build', str(index) + '.jpg'), cell)
 
 def load_image(test):
     image_path = 'data/lfw_faces/train' if not test else 'data/lfw_faces/test'

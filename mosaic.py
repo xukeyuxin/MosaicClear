@@ -224,7 +224,7 @@ class mosaic(op_base):
             g_mix_grads = []
             with tf.device('%s:%s' % (self.train_utils, i)):
                 with tf.name_scope('distributed_%s' % i) as scope:
-                    print('start one gpu')
+                    print('start one %s' % self.train_utils)
                     # if(need_train):
                     #     need_train = tf.constant(tf.bool,True)
                     # else:
@@ -293,15 +293,12 @@ class mosaic(op_base):
             try:
                 while not coord.should_stop():
                     print('start test')
-                    fake = self.generator('G', image, is_training = False)
+                    fake = self.generator('G', image, is_training=False)
                     _fake = self.sess.run(fake)
                     make_image(_fake)
 
-                    step += 1
-
-
             except tf.errors.OutOfRangeError:
-                print('finish test')
+                print('finish train')
             finally:
                 coord.request_stop()
 
@@ -328,13 +325,14 @@ class mosaic(op_base):
                 coord.request_stop()
 
         coord.join(thread)
+        print('thread break')
 
     def test(self):
         index = 0
         test_size = len(os.listdir('data/lfw_faces/test'))
         self.batch_size = test_size
+        self.epoch = 1
         image, label = self.build_queue(index,self.batch_size,test = True)
-
         self.train(image, label, pretrain=True, need_train = False)
 
     def main(self):
