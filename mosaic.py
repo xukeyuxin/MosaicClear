@@ -225,6 +225,10 @@ class mosaic(op_base):
             with tf.device('%s:%s' % (self.train_utils, i)):
                 with tf.name_scope('distributed_%s' % i) as scope:
                     print('start one gpu')
+                    # if(need_train):
+                    #     need_train = tf.constant(tf.bool,True)
+                    # else:
+                    #     need_train = tf.constant(tf.bool, False)
                     d_loss, g_loss, d_grads, g_grads = self.graph(image, label, d_opt, g_opt, is_training = need_train)
 
                     d_mix_grads.append(d_grads)
@@ -289,7 +293,8 @@ class mosaic(op_base):
             try:
                 while not coord.should_stop():
                     print('start test')
-                    fake = self.generator('G', image, is_training = False)
+                    is_training = tf.constant(tf.bool,False)
+                    fake = self.generator('G', image, is_training = is_training)
                     _fake = self.sess.run(fake)
                     make_image(_fake, step + '.jpg')
 
