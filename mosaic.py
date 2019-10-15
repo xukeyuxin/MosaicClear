@@ -188,12 +188,9 @@ class mosaic(op_base):
         variable_averages_g = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY)
         variable_averages_d = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY)
 
-        g_variables_averages_op = variable_averages_g.apply(self.get_vars(
-            combine_name(['distributed_0', 'G']) + combine_name(['distributed_1', 'G']) + combine_name(
-                ['distributed_2', 'G'])))
-        d_variables_averages_op = variable_averages_g.apply(self.get_vars(
-            combine_name(['distributed_0', 'D']) + combine_name(['distributed_1', 'D']) + combine_name(
-                ['distributed_2', 'D'])))
+
+        g_variables_averages_op = variable_averages_g.apply(self.get_vars('G'))
+        d_variables_averages_op = variable_averages_g.apply(self.get_vars('D'))
 
         train_op_g = tf.group(g_grads_op, g_variables_averages_op)
         train_op_d = tf.group(d_grads_op, d_variables_averages_op)
