@@ -82,9 +82,31 @@ class mosaic(op_base):
 
             return tf.nn.tanh(d6)
 
-    def discriminator(self, name, input, target, is_training = True):
+    # def generator(self, name, input, is_training = True):
+    #     with tf.variable_scope(name, reuse=tf.AUTO_REUSE):
+    #         ### 3 -> 64 64
+    #         input = ly.conv2d(input,64, name = 'g_conv2d_first')
+    #         input = ly.batch_normal(input, name = 'g_bn_first')
+    #         input = ly.relu(input)
+    #
+    #         for i in range(16):
+    #             input_new = ly.conv2d(input, 64, name = 'g_conv2d_%s' % i)
+    #             input_new = ly.batch_normal(input_new , name = 'g_bn_%s' % i)
+    #             input_new = ly.relu(input_new)
+    #             input = input_new + input
+    #
+    #         input = ly.deconv2d(input, 32, name = 'g_deconv2d_0')
+    #         input = ly.batch_normal(input, name = 'g_bn_de_0')
+    #         input = ly.relu(input)
+    #
+    #         input = ly.deconv2d(input, 3, name = 'g_deconv2d_0')
+    #         input = ly.batch_normal(input, name = 'g_bn_de_0')
+    #
+    #         return tf.nn.tanh(d6)
+
+
+    def discriminator(self, name, input, is_training = True):
         with tf.variable_scope(name, reuse=tf.AUTO_REUSE):
-            input = tf.concat([input, target], axis=3)
             input = tf.pad(input, [[0, 0], [1, 1], [1, 1], [0, 0]])
             input = ly.conv2d(input, 64, strides=2, kernal_size=4, padding='VALID', name='d_conv2d_0')
             input = ly.relu(input, alpha=0.2)
@@ -113,6 +135,10 @@ class mosaic(op_base):
         safe_log = 1e-12
         return - tf.reduce_mean(tf.log(1 - output_data + safe_log)) - tf.reduce_sum(tf.log(label_data + safe_log))
 
+    def l1_loss(self,input_data,label_data):
+        return tf.abs(input_data - label_data)
+
+
     def generator_loss(self, output_data):
         safe_log = 1e-12
         return - tf.reduce_mean(tf.log(output_data + safe_log))
@@ -122,8 +148,8 @@ class mosaic(op_base):
 
 
         fake = self.generator('G', input_data, is_training = is_training)
-        disc_fake = self.discriminator('D', input_data, fake, is_training = is_training)
-        disc_real = self.discriminator('D', input_data, lable_data, is_training = is_training)
+        disc_fake = self.discriminator('D', fake, is_training = is_training)
+        disc_real = self.discriminator('D', lable_data, is_training = is_training)
 
         d_loss = self.discriminator_loss(disc_fake, disc_real)
         g_loss = self.generator_loss(disc_fake)
@@ -338,6 +364,4 @@ class mosaic(op_base):
     def main(self):
         index = 0
         image, label = self.build_queue(index,self.batch_size,test = False)
-        print(image)
-        print(label)
         self.train(image, label, pretrain=False,  need_train = True)

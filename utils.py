@@ -48,6 +48,18 @@ def make_image(input):
         index += 1
         cv2.imwrite(os.path.join('data/lfw_build', str(index) + '.jpg'), cell)
 
+def make_test_image(test = True,index = 0):
+
+    images = load_image(test)
+    weight_cut = images.shape[2] // 2
+    input_image = images[:, :, :weight_cut, :], images[:, :, weight_cut:, :]
+    mc_image, mc_label = cut_image([index // 2, index % 2], *input_image)
+
+    for cell in float_rgb(mc_label):
+        index += 1
+        cv2.imwrite(os.path.join('data/lfw_test', str(index) + '.jpg'), cell)
+
+
 def load_image(test):
     image_path = 'data/lfw_faces/train' if not test else 'data/lfw_faces/test'
     image_list = os.listdir(image_path)

@@ -90,6 +90,18 @@ def sigmoid_cross_entropy(input,label,safe_log = 1e-12,need_sigmoid = False):
         input = tf.nn.sigmoid(input)
     return -tf.reduce_mean( tf.log( input - label + safe_log ))
 
+# def UpSampling2D(input_array,strides=(2,2)):
+#     h,w,n_channels = input_array.shape
+#     new_h,new_w = h*strides[0],w*strides[1]
+#     output_array=tf.zeros((new_h,new_w,n_channels),dtype=tf.float32)
+#     for i in range(new_h):
+#         for j in range(new_w):
+#             y=int(i/float(strides[0]))
+#             x=int(j/float(strides[1]))
+#             output_array[i,j,:]=input_array[y,x,:]
+#     return output_array
+#
+
 def instance_normal(input,name):
     input_shape = get_shape(input)
     with tf.variable_scope(name):
