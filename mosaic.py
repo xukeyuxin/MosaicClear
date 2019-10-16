@@ -3,6 +3,7 @@ import numpy as np
 from op_base import op_base
 from utils import *
 import layers as ly
+from functools import reduce
 
 
 class mosaic(op_base):
@@ -136,8 +137,17 @@ class mosaic(op_base):
         return - tf.reduce_mean(tf.log(1 - output_data + safe_log)) - tf.reduce_sum(tf.log(label_data + safe_log))
 
     def l1_loss(self,input_data,label_data):
-        return tf.abs(input_data - label_data)
+        l1 = tf.abs(input_data - label_data)
+        l1_shape = l1.get_shape().as_list()
+        return tf.reduce_mean(tf.reduce_sum(l1,axis = l1_shape[1:]))
 
+    def mse_loss(self,input_data,label_data,type = 'sum'):
+        l2 = tf.square(input_data - label_data)
+        if(type == 'sum'):
+            mse = tf.reduce_mean(tf.reduce_sum(l2,axis = [1,2,3]))
+        if(type == 'mean'):
+            mse = tf.reduce_mean(l2)
+        return mse
 
     def generator_loss(self, output_data):
         safe_log = 1e-12
@@ -152,20 +162,21 @@ class mosaic(op_base):
         disc_real = self.discriminator('D', lable_data, is_training = is_training)
 
         d_loss = self.discriminator_loss(disc_fake, disc_real)
-        g_loss = self.generator_loss(disc_fake)
 
-        self.summaries.append(tf.summary.scalar('d_loss', d_loss))
-        self.summaries.append(tf.summary.scalar('f_loss', g_loss))
+        mse_loss = self.mse_loss(disc_fake,disc_real)
+        g_loss =  1e-3 * self.generator_loss(disc_fake)
 
         if( not d_opt and not g_opt):
             return
 
-        # d_grads = d_opt.compute_gradients(d_loss)  ## grads, vars
-        # g_grads = g_opt.compute_gradients(g_loss)  ## grads, vars
-        d_grads = d_opt.compute_gradients(d_loss, var_list=self.get_vars('D'))  ## grads, vars
-        g_grads = g_opt.compute_gradients(g_loss, var_list=self.get_vars('G'))  ## grads, vars
+        self.summaries.append(tf.summary.scalar('d_loss', d_loss))
+        self.summaries.append(tf.summary.scalar('f_loss', g_loss))
+        self.summaries.append(tf.summary.scalar('l1_loss', mse_loss))
 
-        return d_loss, g_loss, d_grads, g_grads
+        d_grads = d_opt.compute_gradients(d_loss, var_list=self.get_vars('D'))  ## grads, vars
+        g_grads = g_opt.compute_gradients(g_loss + mse_loss, var_list=self.get_vars('G'))  ## grads, vars
+
+        return d_loss, g_loss + mse_loss, d_grads, g_grads
 
     ### queue
     def build_queue(self, index, batch_size, test = False):
